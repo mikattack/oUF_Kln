@@ -1,0 +1,22 @@
+## Interface: 50200
+## Author: Drakull, Myno, Kellen
+## Title: oUF_Kln
+## Version: 5.2
+## Notes: PvE-oriented Layout for oUF
+## RequiredDeps: oUF
+## X-Category: UnitFrame
+
+layouts.lua
+cfg.lua
+tags.lua
+elements\Castbar.lua
+elements\RaidDebuffs.lua
+elements\oUF_DebuffHighlight.lua
+elements\oUF_Soulshards.lua
+elements\oUF_Harmony.lua
+elements\oUF_ComboPoints.lua
+elements\oUF_HolyPower.lua
+elements\oUF_ShadowOrbs.lua
+elements\Indicators.lua
+lib.lua
+core.lua
