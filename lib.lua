@@ -305,6 +305,14 @@ function ElementFactory.CreateCastbar(frame, width, height)
   s.FailColor       = {1.0, 0.05, 0}
   s.ChannelingColor = {.5, .5, 1}
 
+  -- Background & Container
+  local c = CreateFrame("Frame", nil, s)
+  c:SetPoint("TOPLEFT", s, "TOPLEFT", -(height + 1), 0)
+  c:SetPoint("BOTTOMRIGHT", s, "BOTTOMRIGHT", 0, 0)
+  c:SetFrameLevel(0)
+  ElementFactory.CreateBackground(c)
+  s.background = c;
+
   -- Backdrop
   local b = s:CreateTexture(nil, "BACKGROUND")
   b:SetTexture(bar_common)
@@ -329,7 +337,7 @@ function ElementFactory.CreateCastbar(frame, width, height)
   
   -- Icon
   local i = s:CreateTexture(nil, "ARTWORK")
-  i:SetPoint("RIGHT", s, "LEFT", -5, 0)
+  i:SetPoint("RIGHT", s, "LEFT", -1, 0)
   i:SetSize(s:GetHeight() - 1, s:GetHeight() - 1)
   i:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 
@@ -406,9 +414,18 @@ function UnitFactory.Player(frame, width, height)
   frame:Tag(raw, "[kln:raw_hp]")
   frame:Tag(power, "[kln:power]")
 
+  -- Debuff Highlight
+  local dbh = frame.Health:CreateTexture(nil, "OVERLAY")
+  dbh:SetAllPoints(frame.Health)
+  dbh:SetTexture(bar_common)
+  dbh:SetBlendMode("ADD")
+  dbh:SetVertexColor(0, 0, 0, 0)
+  frame.DebuffHighlight = dbh
+
   -- Castbar (fixed position)
   local cb = ElementFactory.CreateCastbar(frame, 250, 26)
-  cb:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 250)
+  local offset = cb:GetHeight() / 2
+  cb:SetPoint("BOTTOM", UIParent, "BOTTOM", offset, 250)
 
   -- Resource bar(s)
   ResourceBars.Runes(frame)
@@ -423,7 +440,7 @@ function UnitFactory.Player(frame, width, height)
   Decorators.StatusIcons(frame)
   Decorators.HealPrediction(frame)
 
-  frame.DebuffHighlightBackdrop = true
+  --frame.DebuffHighlightBackdrop = true
   frame.Health.frequentUpdates = true
   frame.Health.colorSmooth = true
   frame.Health.bg.multiplier = 0.3
