@@ -15,10 +15,10 @@ local api = {}  -- Skip to the end to see the public API
 local _, playerClass = UnitClass("player")
 
 oUF.colors.runes = {
-  {0.87, 0.12, 0.23};
-  {0.40, 0.95, 0.20};
-  {0.14, 0.50, 1};
-  {.70, .21, 0.94};
+  {0.87, 0.12, 0.23},
+  {0.40, 0.95, 0.20},
+  {0.14, 0.50, 1},
+  {.70, .21, 0.94},
 }
 
 -- Media
@@ -226,6 +226,7 @@ function ElementFactory.CreateBar(frame, width, height, texture, texture_bg)
   s:SetWidth(width)
   s:SetStatusBarTexture(texture)
   s:GetStatusBarTexture():SetHorizTile(true)
+  s:SetFrameStrata("MEDIUM")
 
   local b = s:CreateTexture(nil, "BACKGROUND")
   b:SetTexture(texture_bg)
@@ -254,6 +255,7 @@ function ElementFactory.CreateBackground(frame)
   local bg = CreateFrame("Frame", nil, frame)
   bg:SetPoint("TOPLEFT", frame, "TOPLEFT", -4, 4)
   bg:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 4, -4)
+  bg:SetFrameStrata("BACKGROUND")
 
   bg:SetBackdrop({
     bgFile   = bg_common,
@@ -426,6 +428,70 @@ function UnitFactory.Player(frame, width, height)
   local cb = ElementFactory.CreateCastbar(frame, 250, 26)
   local offset = cb:GetHeight() / 2
   cb:SetPoint("BOTTOM", UIParent, "BOTTOM", offset, 250)
+
+  ----------------------------------------------------------------------------
+  -- MONK (tank) Special Bars
+
+  local stackWidth = math.floor(210 / 15)
+  local specialBarWidth = (stackWidth * 15) + (14)
+
+  -- Elusive Brew Stacks
+  frame.ElusiveBrewStacks = CreateFrame("Frame", nil, frame)
+  frame.ElusiveBrewStacks:SetSize(specialBarWidth, height)
+  frame.ElusiveBrewStacks:SetPoint("RIGHT", frame.Health, "LEFT", -20, 0)
+  ElementFactory.CreateBackground(frame.ElusiveBrewStacks)
+
+  frame.ElusiveBrewStacks.stacks = {}
+  local front, back
+  local r,g,b
+  for i=1, 15 do
+    back = frame.ElusiveBrewStacks:CreateTexture(nil, "BACKGROUND")
+    back:SetTexture(bar_power)
+    back:SetSize(stackWidth, height)
+
+    front = frame.ElusiveBrewStacks:CreateTexture(nil, "BORDER")
+    front:SetTexture(bar_power)
+    front:SetPoint("TOPLEFT", back, "TOPLEFT", 1, -1)
+    front:SetPoint("BOTTOMRIGHT", back, "BOTTOMRIGHT", -1, 1)
+
+    if i == 1 then
+      back:SetPoint("LEFT", frame.ElusiveBrewStacks, "LEFT", 0, 0)
+    else
+      back:SetPoint("LEFT", frame.ElusiveBrewStacks.stacks[i - 1], "RIGHT", 2, 0)
+    end
+
+    if i < 6 then
+      r,g,b = 1.00,  0.96,  0.41
+    elseif i == 6 then
+      r,g,b = 1.00,  0.49,  0.04
+    else
+      r,g,b = 0.67,  0.83,  0.45
+    end
+    front:SetVertexColor(r,g,b)
+    back:SetVertexColor(r*0.3, g*0.3, b*0.3)
+
+    front:Hide()
+    frame.ElusiveBrewStacks.stacks[i] = front
+  end
+  
+
+  -- Elusive Brew Uptime
+  f, bg = ElementFactory.CreateBar(frame, specialBarWidth, 5, bar_power)
+  f:SetStatusBarColor(1.00,  0.96,  0.41)
+  bg:SetVertexColor(1.00 * 0.3,  0.96 * 0.3,  0.41 * 0.3)
+  frame.ElusiveBrewUptime = f
+  frame.ElusiveBrewUptime.bg = bg
+  frame.ElusiveBrewUptime:SetPoint("BOTTOM", frame.ElusiveBrewStacks, "TOP", 0, 8)
+  ElementFactory.CreateBackground(frame.ElusiveBrewUptime)
+
+  -- Stagger
+  f, bg = ElementFactory.CreateBar(frame, specialBarWidth, 5, bar_power)
+  frame.Stagger = f
+  frame.Stagger.bg = bg
+  frame.Stagger:SetPoint("TOP", frame.ElusiveBrewStacks, "BOTTOM", 0, -8)
+  ElementFactory.CreateBackground(frame.Stagger)
+
+  ----------------------------------------------------------------------------
 
   -- Resource bar(s)
   ResourceBars.Runes(frame)
@@ -1280,11 +1346,15 @@ end
 ------------------------------------------------------------------------------
 
 
-api.Player          = UnitFactory.Player
-api.Target          = UnitFactory.Target
-api.TargetOfTarget  = UnitFactory.TargetOfTarget
-api.Pet             = UnitFactory.Pet
-api.Raid            = UnitFactory.Raid
+api.Player            = UnitFactory.Player
+api.Target            = UnitFactory.Target
+api.TargetOfTarget    = UnitFactory.TargetOfTarget
+api.Pet               = UnitFactory.Pet
+api.Raid              = UnitFactory.Raid
+
+api.CreateString      = ElementFactory.CreateString
+api.CreateBar         = ElementFactory.CreateBar
+api.CreateBackground  = ElementFactory.CreateBackground
 
 api.SpawnMenu = SpawnMenu
 api.StyleMirrorBar = function(f)
