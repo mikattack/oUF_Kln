@@ -9,6 +9,7 @@
 layouts.lua
 cfg.lua
 tags.lua
+
 elements\Castbar.lua
 elements\RaidDebuffs.lua
 elements\oUF_ComboPoints.lua
@@ -21,5 +22,10 @@ elements\oUF_ShadowOrbs.lua
 elements\oUF_Soulshards.lua
 elements\oUF_Stagger.lua
 elements\Indicators.lua
+
 lib.lua
+
+layouts\monk.lua
+layouts\warlock.lua
+
 core.lua

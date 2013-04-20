@@ -246,10 +246,12 @@ cfg.media.font = {
 ------------------------------------------------------------------------------
 
 
--- Do not change this
+-- Do not change these
 cfg.spec = nil
 cfg.updateSpec = function()
 	cfg.spec = GetSpecialization()
 end
+
+cfg.layouts = {}
 
 ns.cfg = cfg
