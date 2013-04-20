@@ -655,6 +655,48 @@ function UnitFactory.Raid(frame, width, height)
 end
 
 
+function UnitFactory.Boss(frame, width, height)
+  frame:SetSize(width,height)
+  frame.background = ElementFactory.CreateBackground(frame)
+
+  -- Health bar
+  local f, bg = ElementFactory.CreateBar(frame, width, height - 5, bar_common)
+  frame.Health = f
+  frame.Health.bg = bg
+  frame.Health:SetPoint("TOP", 0, 0)
+
+  -- Text readouts
+  local name, health
+
+  name = ElementFactory.CreateString(frame.Health, font_common, 16, "OUTLINE")
+  name:SetPoint("LEFT", frame.Health, "LEFT", 3, 0)
+  name.frequentUpdates = true
+
+  health = ElementFactory.CreateString(frame.Health, font_common, 28, "OUTLINE")
+  health:SetPoint("RIGHT", frame.Health, "RIGHT", -2, 1)
+  health.frequentUpdates = true
+
+  frame:Tag(name, "[kln:level] [kln:color][name]")
+  frame:Tag(health, "[kln:boss]")
+
+  -- Slightly toasted, minty flavor
+  Decorators.PowerBar(frame)
+  Decorators.StatusIcons(frame)
+
+  frame.Health.frequentUpdates = true
+  frame.Health.colorSmooth = true
+  frame.Health.bg.multiplier = 0.3
+  
+  frame.Power.colorTapping = true
+  frame.Power.colorClass = true
+  frame.Power.colorReaction = true
+  frame.Power.bg.multiplier = 0.3
+    
+  frame.Health.Smooth = true
+  frame.Power.Smooth = true
+end
+
+
 --[[--------------------------------------------------------------------------
   Frame Decorators
 
@@ -1289,6 +1331,7 @@ api.Target            = UnitFactory.Target
 api.TargetOfTarget    = UnitFactory.TargetOfTarget
 api.Pet               = UnitFactory.Pet
 api.Raid              = UnitFactory.Raid
+api.Boss              = UnitFactory.Boss
 
 api.CreateString      = ElementFactory.CreateString
 api.CreateBar         = ElementFactory.CreateBar

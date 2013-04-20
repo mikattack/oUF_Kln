@@ -120,7 +120,7 @@ local DefaultLayout = {
     lib.Target(self, framewidth * 0.70, frameheight)
     self:SetSize(framewidth * 0.70,frameheight)
     --if cfg.focusBuffs or cfg.focusDebuffs then lib.addFocusAuras(self) end
-    self:SetPoint("TOP", UIParent, "TOP", math.floor((framewidth * 0.30) / 2), -15)
+    self:SetPoint("TOP", UIParent, "TOP", -math.floor((framewidth * 0.30) / 2), -15)
   end,
   
 
@@ -142,6 +142,15 @@ local DefaultLayout = {
   raid = function(self, ...)
     self.mystyle = "raid"
     lib.Raid(self, 77, 32)
+  end,
+
+
+  boss = function(self, ...)
+    self.mystyle = "boss"
+    lib.Boss(self, framewidth, frameheight)
+    self:SetSize(framewidth, frameheight)
+    --if cfg.targetBuffs then lib.addBuffs(self) end
+    --if cfg.targetDebuffs then lib.addDebuffs(self) end
   end,
 }
 
@@ -191,31 +200,7 @@ end
 -- 
 local BossStyle = function(self, unit)
   self.mystyle="boss"
-  return
-  
-  --[[
-  -- Size and Scale
-  self:SetSize(cfg.unitframeWidth*cfg.unitframeScale, 50*cfg.unitframeScale)
-  
-  -- Generate Bars
-  lib.addHealthBar(self)
-  lib.addStrings(self)
-  lib.addPowerBar(self)
-
-  -- Bar Style
-  self.Health.colorSmooth = true
-  self.Health.bg.multiplier = 0.2
-  self.Power.colorClass = true
-  self.Power.colorReaction = true
-  self.Power.colorHealth = true
-  self.Power.bg.multiplier = 0.2
-  
-  -- Elements
-  lib.addInfoIcons(self)
-  lib.addCastBar(self)
-  lib.addBossBuffs(self)
-  lib.addBossDebuffs(self)
-  --]]
+  return DefaultLayout['boss'](self)
 end
 
 
@@ -226,7 +211,7 @@ end
 
 oUF:RegisterStyle('klnFrames', UnitFrameStyle)
 oUF:RegisterStyle('klnRaid', RaidStyle)
---oUF:RegisterStyle('klnBoss', BossStyle)
+oUF:RegisterStyle('klnBoss', BossStyle)
 
 
 oUF:Factory(function(self)
@@ -300,19 +285,39 @@ oUF:Factory(function(self)
   end
 end)
 
---[[
+
 -- Boss Frames
-oUF:SetActiveStyle('drkBoss')
+oUF:SetActiveStyle('klnBoss')
 local boss1 = oUF:Spawn("boss1", "oUF_Boss1")
-boss1:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", cfg.bossX, cfg.bossY)
+boss1:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -5, 220)
 local boss2 = oUF:Spawn("boss2", "oUF_Boss2")
-boss2:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", cfg.bossX, cfg.bossY+75)
+boss2:SetPoint("BOTTOMRIGHT", oUF_Boss1, "TOPRIGHT", 0, 8)
 local boss3 = oUF:Spawn("boss3", "oUF_Boss3")
-boss3:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", cfg.bossX, cfg.bossY+150)
+boss3:SetPoint("BOTTOMRIGHT", oUF_Boss2, "TOPRIGHT", 0, 8)
 local boss4 = oUF:Spawn("boss4", "oUF_Boss4")
-boss4:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", cfg.bossX, cfg.bossY+225)
+boss4:SetPoint("BOTTOMRIGHT", oUF_Boss3, "TOPRIGHT", 0, 8)
 local boss5 = oUF:Spawn("boss5", "oUF_Boss5")
-boss5:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", cfg.bossX, cfg.bossY+300)
+boss5:SetPoint("BOTTOMRIGHT", oUF_Boss4, "TOPRIGHT", 0, 8)
+
+-- Boss debug
+--[[
+local function debugFrame(frame)
+  local f = CreateFrame("Frame", nil, UIParent)
+  f:SetBackdropColor(0.2, 1, 0.2, 1)
+  f:SetSize(frame:GetWidth(), frame:GetHeight())
+  f:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 0)
+  
+  f.texture = f:CreateTexture()
+  f.texture:SetAllPoints(f)
+  f.texture:SetTexture(1,0,0, 0.5)
+
+  return f
+end
+local debugBoss1 = debugFrame(oUF_Boss1)
+local debugBoss2 = debugFrame(oUF_Boss2)
+local debugBoss3 = debugFrame(oUF_Boss3)
+local debugBoss4 = debugFrame(oUF_Boss4)
+local debugBoss5 = debugFrame(oUF_Boss5)
 --]]
 
 
