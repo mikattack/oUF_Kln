@@ -27,13 +27,10 @@ oUF.colors.smooth = {
 ------------------------------------------------------------------------------
 
 -- 
--- Layouts define which frames to spawn, how to position them, and
--- (optionally) a chance to chance to complete change their look and
--- behavior.  However, they are not directly passed the spawned frames
--- and need a way to access them.
+-- Convenience for accessing frames spawned by oUF and this addon.
 -- 
 
--- Spawned frames
+-- Spawned frames (no transforms on Boss or Raid frames)
 local frames = {
 	player 				= "oUF_klnFramesPlayer",
 	target 				= "oUF_klnFramesTarget",
@@ -56,9 +53,14 @@ function lapi.GetFrameName(name) return frames[name] end
 
 --
 -- The default layout sets up the general look and positioning the oUF_Kln.
--- Though its settings cannot be altered, they can be overridden with
--- user defined layouts.  Once the default layout has been initialized,
--- the "active" layout (its just a callback) will be applied.
+-- Though these settings cannot be altered, they can be overridden through
+-- "spawn" and "postspawn" hooks.  This is how each class is given a
+-- unique layout (for those classes which have them).
+-- 
+-- Hooks:
+--  "spawn" 		- Run once per unit frame, passed the spawned frame.
+--  "postspawn" - Run once after spawning everything.  Passed the frame
+--							  accessor convenience method API.
 -- 
 
 local framewidth  = math.ceil(UIParent:GetWidth() * 0.2442)

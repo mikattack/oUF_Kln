@@ -262,7 +262,7 @@ function ElementFactory.CreateBackground(frame)
     edgeFile = border_common,
     tile     = false,
     tileSize = 0, 
-    edgeSize = 10, 
+    edgeSize = 11, 
     insets = { 
       left   = 3,
       right  = 3,
@@ -427,7 +427,7 @@ function UnitFactory.Player(frame, width, height)
   -- Castbar (fixed position)
   local cb = ElementFactory.CreateCastbar(frame, 250, 26)
   local offset = cb:GetHeight() / 2
-  cb:SetPoint("BOTTOM", UIParent, "BOTTOM", offset, 250)
+  cb:SetPoint("BOTTOM", UIParent, "BOTTOM", offset, 200)
 
   ----------------------------------------------------------------------------
   -- MONK (tank) Special Bars
@@ -476,7 +476,7 @@ function UnitFactory.Player(frame, width, height)
   
 
   -- Elusive Brew Uptime
-  f, bg = ElementFactory.CreateBar(frame, specialBarWidth, 5, bar_power)
+  f, bg = ElementFactory.CreateBar(frame, specialBarWidth, 7, bar_power)
   f:SetStatusBarColor(1.00,  0.96,  0.41)
   bg:SetVertexColor(1.00 * 0.3,  0.96 * 0.3,  0.41 * 0.3)
   frame.ElusiveBrewUptime = f
@@ -485,7 +485,7 @@ function UnitFactory.Player(frame, width, height)
   ElementFactory.CreateBackground(frame.ElusiveBrewUptime)
 
   -- Stagger
-  f, bg = ElementFactory.CreateBar(frame, specialBarWidth, 5, bar_power)
+  f, bg = ElementFactory.CreateBar(frame, specialBarWidth, 7, bar_power)
   frame.Stagger = f
   frame.Stagger.bg = bg
   frame.Stagger:SetPoint("TOP", frame.ElusiveBrewStacks, "BOTTOM", 0, -8)
@@ -544,7 +544,7 @@ function UnitFactory.Target(frame, width, height)
   health:SetPoint("RIGHT", frame.Health, "RIGHT", -1, 0)
   health.frequentUpdates = true
 
-  frame:Tag(name, "[kln:level] [kln:color][name][kln:afkdnd]")
+  frame:Tag(name, "[kln:level] [kln:color][kln:name][kln:afkdnd]")
   frame:Tag(health, "[kln:full_hp]")
 
   -- Castbar (fixed position)
@@ -597,7 +597,7 @@ function UnitFactory.TargetOfTarget(frame, width, height)
   health:SetPoint("RIGHT", frame.Health, "RIGHT", -1, 0)
   health.frequentUpdates = true
 
-  frame:Tag(name, "[kln:color][name]")
+  frame:Tag(name, "[kln:color][kln:shortname]")
   frame:Tag(health, "[kln:percent_hp]")
 
   -- The "Decapitate" fragrance, from Charnel
@@ -1096,7 +1096,9 @@ function ResourceBars.Harmony(self)
 	mhb:SetPoint('CENTER', UIParent, "BOTTOM", resourceX, resourceY)
 	mhb:SetWidth(self.Health:GetWidth() * .75)
 	mhb:SetHeight(11)
-  ElementFactory.CreateBackground(mhb)
+
+  local background = ElementFactory.CreateBackground(mhb)
+  background:SetFrameStrata('MEDIUM')
 
   -- Placeholder slots for the "orbs"
   local maxPower = UnitPowerMax("player", SPELL_POWER_CHI)
@@ -1110,7 +1112,7 @@ function ResourceBars.Harmony(self)
     mhb.slots[i]:SetHeight(9)
     mhb.slots[i]:SetWidth(mhb:GetWidth() / maxPower - 2)
     if i == 1 then
-      mhb.slots[i]:SetPoint("LEFT", mhb.slots, "LEFT", 0, 0)
+      mhb.slots[i]:SetPoint("LEFT", mhb.slots, "LEFT", 1, 0)
     else
       mhb.slots[i]:SetPoint("LEFT", mhb.slots[i - 1], "RIGHT", 2, 0)
     end
@@ -1130,7 +1132,7 @@ function ResourceBars.Harmony(self)
 		mhb[i].bg.multiplier = .3
 		
 		if i == 1 then
-			mhb[i]:SetPoint("LEFT", mhb, "LEFT", 0, 0)
+			mhb[i]:SetPoint("LEFT", mhb, "LEFT", 1, 0)
 		else
 			mhb[i]:SetPoint("LEFT", mhb[i-1], "RIGHT", 2, 0)
 		end

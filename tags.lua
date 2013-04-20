@@ -2,7 +2,11 @@ local addon, ns = ...
 local cfg = ns.cfg
 
 local tags = oUF.Tags
+local GetTime = GetTime
+
 local format = string.format
+local len = string.len
+local sub = string.sub
 
 
 -- Short Value
@@ -11,7 +15,7 @@ local SVal = function(val)
 		if (val >= 1e6) then
 			return ("%.1fm"):format(val / 1e6)
 		elseif (val >= 1e3) then
-			return ("%.1fk"):format(val / 1e3)
+			return ("%.0fk"):format(val / 1e3)
 		else
 			return ("%d"):format(val)
 		end
@@ -29,6 +33,28 @@ local function hex(r, g, b)
 end
 
 
+-- Auto-shortening Name
+tags.Events["kln:name"] = 'UNIT_NAME_UPDATE'
+tags.Methods["kln:name"] = function(u, r)
+	local n = UnitName(r or u)
+	if (len(n) >= 14) then
+		n = format('%s...', sub(n, 1, 14))
+	end
+	return n
+end
+
+
+-- TargetOfTarget Name (it's very short)
+tags.Events["kln:shortname"] = 'UNIT_NAME_UPDATE'
+tags.Methods["kln:shortname"] = function(u, r)
+	local n = UnitName(r or u)
+	if (len(n) >= 6) then
+		n = format('%s...', sub(n, 1, 6))
+	end
+	return n
+end
+
+
 -- Percent Health
 tags.Events["kln:percent_hp"] = 'UNIT_HEALTH UNIT_MAXHEALTH'
 tags.Methods["kln:percent_hp"] = function(u)
@@ -36,7 +62,7 @@ tags.Methods["kln:percent_hp"] = function(u)
 	if(m == 0) then
 		return 0
 	else
-		return math.floor((UnitHealth(u)/m  *100 + .05) * 10 / 10) .. '%'
+		return format("%d%%", math.floor((UnitHealth(u) / m * 100 + .05) * 10) / 10)
 	end
 end
 
@@ -51,7 +77,7 @@ tags.Methods["kln:raw_hp"] = function(u)
 		if min == max then 
 			return SVal(max)
 		else
-			return "|cFFFFAAAA"..SVal(min).."|r/"..SVal(max)
+			return format("|cFFFFAAAA%s|r / %s", SVal(min), SVal(max))
 		end
 	end
 end
@@ -66,10 +92,10 @@ tags.Methods["kln:full_hp"] = function(u)
 		local per = _TAGS["kln:percent_hp"](u) or 0
 		local min, max = UnitHealth(u), UnitHealthMax(u)
 		if u == "player" or u == "target" then
-			if min~=max then 
-				return "|cFFFFAAAA"..SVal(min).."|r/"..SVal(max).." | "..per
+			if min ~= max then 
+				return format("|cFFFFAAAA%s|r / %s | %s", SVal(min), SVal(max), per)
 			else
-				return SVal(max).." | "..per
+				return format("%s | %s", SVal(max), per)
 			end
 		else
 			return per
@@ -87,10 +113,22 @@ tags.Methods["kln:raid_hp"] = function(u)
 	
 	local missinghp = SVal(_TAGS["missinghp"](u)) or ""
 	if missinghp ~= "" then
-		return "-"..missinghp
+		return format("- %s", missinghp)
 	else
 		return ""
 	end
+  end
+end
+
+
+-- Boss HP (percent)
+tags.Events["kln:boss"] = 'UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH UNIT_TARGETABLE_CHANGED'
+tags.Methods["kln:boss"] = function(u)
+  local m = UnitHealthMax(u)
+  if(m == 0) then
+    return 0
+  else
+    return format("%s%%", math.floor((UnitHealth(u) / m * 100 + .05) * 10) / 10)
   end
 end
 
@@ -146,32 +184,12 @@ end
 tags.Events["kln:power"] = 'UNIT_MAXPOWER UNIT_POWER'
 tags.Methods["kln:power"]  = function(u) 
 	local min, max = UnitPower(u), UnitPowerMax(u)
-	if min~=max then 
-		return SVal(min).."/"..SVal(max)
+	if min ~= max then 
+		return format("%s / %s", SVal(min), SVal(max))
 	else
 		return SVal(max)
 	end
 end
-
-
--- Player Power
-tags.Events["my:power"] = 'UNIT_MAXPOWER UNIT_POWER'
-tags.Methods["my:power"] = function(unit)
-	local curpp, maxpp = UnitPower(unit), UnitPowerMax(unit);
-	local playerClass, englishClass = UnitClass(unit);
-
-	if(maxpp == 0) then
-		return ""
-	else
-		if (englishClass == "WARRIOR") then
-			return curpp
-		elseif (englishClass == "DEATHKNIGHT" or englishClass == "ROGUE" or englishClass == "HUNTER") then
-			return curpp .. ' /' .. maxpp
-		else
-			return SVal(curpp) .. " /" .. SVal(maxpp) .. " | " .. math.floor(curpp/maxpp*100+0.5) .. "%"
-		end
-	end
-end;
 
 
 -- Unit Level
@@ -187,23 +205,23 @@ tags.Methods["kln:level"] = function(unit)
 	if l <= 0 then l = "??" end
 	
 	if c == "worldboss" then
-		str = string.format("|cff%02x%02x%02xBoss|r",250,20,0)
+		str = format("|cff%02x%02x%02xBoss|r",250,20,0)
 	elseif c == "eliterare" then
-		str = string.format("|cff%02x%02x%02x%s|r|cff0080FFR|r+",d.r*255,d.g*255,d.b*255,l)
+		str = format("|cff%02x%02x%02x%s|r|cff0080FFR|r+",d.r*255,d.g*255,d.b*255,l)
 	elseif c == "elite" then
-		str = string.format("|cff%02x%02x%02x%s|r+",d.r*255,d.g*255,d.b*255,l)
+		str = format("|cff%02x%02x%02x%s|r+",d.r*255,d.g*255,d.b*255,l)
 	elseif c == "rare" then
-		str = string.format("|cff%02x%02x%02x%s|r|cff0080FFR|r",d.r*255,d.g*255,d.b*255,l)
+		str = format("|cff%02x%02x%02x%s|r|cff0080FFR|r",d.r*255,d.g*255,d.b*255,l)
 	else
 		if not UnitIsConnected(unit) then
 			str = "??"
 		else
 			if UnitIsPlayer(unit) then
-				str = string.format("|cff%02x%02x%02x%s",d.r*255,d.g*255,d.b*255,l)
+				str = format("|cff%02x%02x%02x%s",d.r*255,d.g*255,d.b*255,l)
 			elseif UnitPlayerControlled(unit) then
-				str = string.format("|cff%02x%02x%02x%s",d.r*255,d.g*255,d.b*255,l)
+				str = format("|cff%02x%02x%02x%s",d.r*255,d.g*255,d.b*255,l)
 			else
-				str = string.format("|cff%02x%02x%02x%s",d.r*255,d.g*255,d.b*255,l)
+				str = format("|cff%02x%02x%02x%s",d.r*255,d.g*255,d.b*255,l)
 			end
 		end		
 	end
@@ -227,90 +245,101 @@ end
 --
 
 
-local GetTime = GetTime
-
-local numberize = function(val)
-	if val >= 1e6 then
-		return ("%.1fm"):format(val/1e6)
-	elseif val >= 1e3 then
-		return ("%.1fk"):format(val/1e3)
-	else
-		return ("%d"):format(val)
-	end
-end
-
-local getTime = function(expirationTime)
-    local expire = (expirationTime-GetTime())
-	local timeLeft = numberize(expire)
-    return timeLeft
-end
-
-
+local EARTH_SHIELD = GetSpellInfo(974)
 tags.Events["Shaman:EarthShield"] = 'UNIT_AURA'
 tags.Methods["Shaman:EarthShield"] = function(unit)
-	local esCount = select(4, UnitAura(unit,GetSpellInfo(974)))
+	local esCount, _, _, _, source = select(4, UnitAura(unit, EARTH_SHIELD))
 	if esCount then
-		if esCount > 3 then 
-			return "|cff33cc00"..esCount.."|r "
+		if source == "player" then
+      if esCount > 3 then 
+        return format("|cff33cc00%.0f|r ", esCount)
+      else
+        return format("|cffffcc00%.0f|r ", esCount)
+      end
 		else
-			return "|cffffcc00"..esCount.."|r "
+			return format("|cffaa2200%.0f|r ", esCount)
 		end
 	end
 end
 
+
+local RIPTIDE = GetSpellInfo(61295)
 tags.Events["Shaman:Riptide"] = 'UNIT_AURA'
 tags.Methods["Shaman:Riptide"] = function(unit)
-	local name,_,_,_,_,_,timeLeft,source = UnitAura(unit,GetSpellInfo(61295))
-	if source == "player" then return "|cff0099cc"..getTime(timeLeft).."|r " end
+	local _, _, _, _, _, _, expirationTime, source = UnitAura(unit, RIPTIDE)
+  if source and source == "player" then
+    return format("|cff0099cc%.0f|r ", expirationTime - GetTime())
+  end
 end
 
+
+local POWER_WORD_SHIELD = GetSpellInfo(17)
+local WEAKENED_SOUL = GetSpellInfo(6788)
 tags.Events["Priest:PowerWordShield"] = 'UNIT_AURA'
 tags.Methods["Priest:PowerWordShield"] = function(unit)
-	local name,_,_,_,_,_,timeLeft,source = UnitAura(unit,GetSpellInfo(17))
-	if name then
-		return "|cffffcc00"..getTime(timeLeft).."|r"
+	local _, _, _, _, _, _, expirationTime = UnitAura(unit, POWER_WORD_SHIELD)
+  if expirationTime then
+    return format("|cffffcc00%.0f|r ", expirationTime - GetTime())
 	else
-		local name,_,_,_,_,_,timeLeft,source = UnitDebuff(unit,GetSpellInfo(6788))
-		if name then return "|cffaa0000"..getTime(timeLeft).."|r " end
+		local _, _, _, _, _, _, expirationTime = UnitDebuff(unit, WEAKENED_SOUL)
+    if expirationTime then
+      return format("|cffaa0000%.0f|r ", expirationTime - GetTime())
+    end
 	end
 end
 
+
+local RENEW = GetSpellInfo(139)
 tags.Events["Priest:Renew"] = 'UNIT_AURA'
 tags.Methods["Priest:Renew"] = function(unit)
-	local name,_,_,_,_,_,timeLeft,source = UnitAura(unit,GetSpellInfo(139))
-	if source == "player" then return "|cff33cc00"..getTime(timeLeft).."|r " end
+	local _, _, _, _, _, _, expirationTime, source = UnitAura(unit, RENEW)
+  if source and source == "player" then
+    return format("|cff33cc00%.0f|r ", expirationTime - GetTime())
+  end
 end
 
+
+local LIFEBLOOM = GetSpellInfo(33763)
 tags.Events["Druid:Lifebloom"] = 'UNIT_AURA'
 tags.Methods["Druid:Lifebloom"] = function(unit)
-	local name,_,_,c,_,_,timeLeft,source = UnitAura(unit,GetSpellInfo(33763))
-	if source == "player" then
-		if c == 1 then
-			return "|cffcc0000"..getTime(timeLeft).."|r "
-		elseif c == 2 then
-			return "|cffff6314"..getTime(timeLeft).."|r "
-		elseif c == 3 then
-			return "|cffffcc00"..getTime(timeLeft).."|r "
+	local _, _, _, stacks, _, _, expirationTime, source = UnitAura(unit, LIFEBLOOM)
+  if source and source == "player" then
+    if stacks == 1 then
+      return format("|cffcc0000%.0f|r ", expirationTime - GetTime())
+    elseif stacks == 2 then
+      return format("|cffff6314%.0f|r ", expirationTime - GetTime())
+    elseif stacks == 3 then
+      return format("|cffffcc00%.0f|r ", expirationTime - GetTime())
 		end
 	end
 end
 
+
+local REJUVENATION = GetSpellInfo(774)
 tags.Events["Druid:Rejuv"] = 'UNIT_AURA'
 tags.Methods["Druid:Rejuv"] = function(unit)
-	local name,_,_,_,_,_,timeLeft,source = UnitAura(unit,GetSpellInfo(774))
-	if source == "player" then return "|cffd814ff"..getTime(timeLeft).."|r " end
+	local _, _, _, _, _, _, expirationTime, source = UnitAura(unit, REJUVENATION)
+  if source and source == "player" then
+    return format("|cffd814ff%.0f|r ", expirationTime - GetTime())
+  end
 end
 
+
+local REGROWTH = GetSpellInfo(8936)
 tags.Events["Druid:Regrowth"] = 'UNIT_AURA'
 tags.Methods["Druid:Regrowth"] = function(unit)
-	local name,_,_,_,_,_,timeLeft,source = UnitAura(unit,GetSpellInfo(8936))
-	if source == "player" then return "|cff33cc00"..getTime(timeLeft).."|r " end
+	local _, _, _, _, _, _, expirationTime, source = UnitAura(unit, REGROWTH)
+  if source == "player" then
+    return format("|cff33cc00%.0f|r ", expirationTime - GetTime())
+  end
 end
 
+
+local BEACON = GetSpellInfo(53563)
 tags.Events["Paladin:Beacon"] = 'UNIT_AURA'
 tags.Methods["Paladin:Beacon"] = function(unit)
-	local name,_,_,_,_,_,_,source = UnitAura(unit,GetSpellInfo(53563))
-	if name then
+	local _, _, _, _, _, _, _, source = UnitAura(unit, BEACON)
+  if source then
 		if source == "player" then
 			return "|cffffff33M|r "
 		else
@@ -319,37 +348,61 @@ tags.Methods["Paladin:Beacon"] = function(unit)
 	end
 end
 
+
+local FORBEARANCE = GetSpellInfo(25771)
 tags.Events["Paladin:Forbearance"] = 'UNIT_AURA'
 tags.Methods["Paladin:Forbearance"] = function(unit)
-	if UnitDebuff(unit,GetSpellInfo(25771)) then return "|cffaa0000M|r " end
+	if UnitDebuff(unit, FORBEARANCE) then
+    return "|cffaa0000M|r "
+  end
 end
 
+
+local ENVELOPING_MIST = GetSpellInfo(124682)
 tags.Events["Monk:EnvelopingMist"] = 'UNIT_AURA'
 tags.Methods["Monk:EnvelopingMist"] = function(unit)
-	local name,_,_,_,_,_,timeLeft,source = UnitAura(unit,GetSpellInfo(124682))
-	if source == "player" then return "|cff33cc00"..getTime(timeLeft).."|r " end
+	local _, _, _, _, _, _, expirationTime, source = UnitAura(unit, ENVELOPING_MIST)
+  if source and source == "player" then
+    return format("|cff33cc00%.0f|r ", expirationTime - GetTime())
+  end
 end
 
+
+local RENEWING_MIST = GetSpellInfo(119611)
 tags.Events["Monk:RenewingMist"] = 'UNIT_AURA'
 tags.Methods["Monk:RenewingMist"] = function(unit)
-	local name,_,_,_,_,_,timeLeft,source = UnitAura(unit,GetSpellInfo(119611))
-	if source == "player" then return "|cff0099cc"..getTime(timeLeft).."|r " end
+	local _, _, _, _, _, _, expirationTime, source = UnitAura(unit, RENEWING_MIST)
+  if source and source == "player" then
+    return format("|cff0099cc%.0f|r ", expirationTime - GetTime())
+  end
 end
 
+
+local VIGILANCE = GetSpellInfo(114030)
 tags.Events["Warrior:Vigilance"] = 'UNIT_AURA'
 tags.Methods["Warrior:Vigilance"] = function(unit)
-	local name,_,_,_,_,_,timeLeft,_ = UnitAura(unit,GetSpellInfo(114030))
-	if name then return "|cff33cc00"..getTime(timeLeft).."|r " end
+	local _, _, _, _, _, _, expirationTime = UnitAura(unit, VIGILANCE)
+  if expirationTime then
+    return format("|cff33cc00%.0f|r ", expirationTime - GetTime())
+  end
 end
 
+
+local SAFEGUARD = GetSpellInfo(114029)
 tags.Events["Warrior:Safeguard"] = 'UNIT_AURA'
 tags.Methods["Warrior:Safeguard"] = function(unit)
-	local name,_,_,_,_,_,timeLeft,_ = UnitAura(unit,GetSpellInfo(114029))
-	if name then return "|cff33cc00"..getTime(timeLeft).."|r " end
+	local _, _, _, _, _, _, expirationTime, _ = UnitAura(unit, SAFEGUARD)
+  if expirationTime then
+    return format("|cff33cc00%.0f|r ", expirationTime - GetTime())
+  end
 end
 
+
+local DEATH_BARRIER = GetSpellInfo(115635)
 tags.Events["DK:DeathBarrier"] = 'UNIT_AURA'
 tags.Methods["DK:DeathBarrier"] = function(unit)
-	local name,_,_,_,_,_,timeLeft,_ = UnitAura(unit,GetSpellInfo(115635))
-	if name then return "|cffffcc00"..getTime(timeLeft).."|r " end
+	local _, _, _, _, _, _, expirationTime, _ = UnitAura(unit, DEATH_BARRIER)
+  if expirationTime then
+    return format("|cffffcc00%.0f|r ", expirationTime - GetTime())
+  end
 end
