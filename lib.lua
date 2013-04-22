@@ -48,7 +48,7 @@ local ResourceBars    = {}
 ------------------------------------------------------------------------------
 
 
-function FormatTime(s)
+local function FormatTime(s)
   local day, hour, minute = 86400, 3600, 60
   if s >= day then
     return format("%dd", floor(s/day + 0.5)), s % day
@@ -67,8 +67,8 @@ function FormatTime(s)
 end
 
 
-function CreateAuraTimer(self, elapsed)
-  if not self.timeLeft then
+local function CreateAuraTimer(self, elapsed)
+  if not self.timeLeft or self.timeLeft > 1800 then
     return
   end
 
@@ -101,7 +101,7 @@ end
 
 
 -- Right Click Menu
-function SpawnMenu(self)
+local function SpawnMenu(self)
   local unit = self.unit:sub(1, -2)
   local cunit = self.unit:gsub("^%l", string.upper)
 
@@ -123,7 +123,7 @@ end
 
 
 -- For the Raid frames target highlight border
-function ChangedTarget(self, event, unit)
+local function ChangedTarget(self, event, unit)
   if UnitIsUnit('target', self.unit) then
     self.TargetBorder:Show()
   else
@@ -137,7 +137,7 @@ end
 ------------------------------------------------------------------------------
 
 
-function PostUpdateRaidFrame(Health, unit, min, max)
+local function PostUpdateRaidFrame(Health, unit, min, max)
   local dc = not UnitIsConnected(unit)
   local dead = UnitIsDead(unit)
   local ghost = UnitIsGhost(unit)
@@ -162,7 +162,7 @@ function PostUpdateRaidFrame(Health, unit, min, max)
 end
 
 
-function PostUpdateRaidFramePower(Power, unit, min, max)
+local function PostUpdateRaidFramePower(Power, unit, min, max)
   local dc = not UnitIsConnected(unit)
   local dead = UnitIsDead(unit)
   local ghost = UnitIsGhost(unit)
@@ -172,6 +172,81 @@ function PostUpdateRaidFramePower(Power, unit, min, max)
   if dc or dead or ghost then
     Power:SetAlpha(.3)
   end
+end
+
+
+local function PostCreateIcon(self, button)
+  self.showDebuffType = true
+  self.disableCooldown = true
+  button.cd.noOCC = true
+  button.cd.noCooldownCount = true
+
+  button.icon:SetTexCoord(.04, .96, .04, .96)
+  button.icon:SetPoint("TOPLEFT", button, "TOPLEFT", 0, 0)
+  button.icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 0)
+
+  button:SetBackdrop({
+    bgFile   = bar_power,
+    edgeFile = bar_power,
+    tile     = false,
+    tileSize = 32, 
+    edgeSize = 1,
+    insets = { 
+      left   = 1,
+      right  = 1,
+      top    = 1,
+      bottom = 1,
+    }
+  });
+  button:SetBackdropColor(0,0,0,1)
+  button:SetBackdropBorderColor(0,0,0,1)
+
+  button.overlay:SetTexture(bar_power)
+  button.overlay:ClearAllPoints()
+  button.overlay:SetPoint("TOPLEFT", button, "TOPLEFT", -1, 1)
+  button.overlay:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 1, -1)
+  button.overlay:SetDrawLayer('BACKGROUND')
+  
+  button.time = ElementFactory.CreateString(button, font_small, 8, "OUTLINE")
+  button.time:SetPoint("BOTTOMLEFT", button, -2, -2)
+  button.time:SetJustifyH('CENTER')
+  button.time:SetVertexColor(1,1,1)
+  
+  button.count = ElementFactory.CreateString(button, font_small, 8, "OUTLINE")
+  button.count:ClearAllPoints()
+  button.count:SetPoint("TOPRIGHT", button, 2, 2)
+  button.count:SetVertexColor(1,1,1) 
+end
+
+
+local function PostUpdateIcon(self, unit, icon, index, offset, filter, isDebuff)
+  local _, _, _, _, _, duration, expirationTime, unitCaster, _ = UnitAura(unit, index, icon.filter)
+  
+  if duration and duration > 0 then
+    icon.time:Show()
+    icon.timeLeft = expirationTime  
+    icon:SetScript("OnUpdate", CreateAuraTimer)     
+  else
+    icon.time:Hide()
+    icon.timeLeft = math.huge
+    icon:SetScript("OnUpdate", nil)
+  end
+  
+  --[[
+  -- Desaturate Player Auras
+  if unit == "target" then
+    if (unitCaster == 'player' or unitCaster == 'vehicle') then
+      icon.icon:SetDesaturated(nil)
+    elseif not UnitPlayerControlled(unit) then -- If Unit is Player Controlled don't desaturate debuffs
+      icon:SetBackdropColor(0, 0, 0)
+      --icon.overlay:SetVertexColor(0.3, 0.3, 0.3)
+      icon.overlay:SetVertexColor(.22, .27, .35)
+      icon.icon:SetDesaturated(1)
+    end
+  end
+  --]]
+  
+  --icon.first = true
 end
 
 
@@ -427,7 +502,7 @@ function UnitFactory.Player(frame, width, height)
   -- Castbar (fixed position)
   local cb = ElementFactory.CreateCastbar(frame, 250, 26)
   local offset = cb:GetHeight() / 2
-  cb:SetPoint("BOTTOM", UIParent, "BOTTOM", offset, 200)
+  cb:SetPoint("BOTTOM", UIParent, "BOTTOM", offset, 210)
 
   -- Resource bar(s)
   ResourceBars.Runes(frame)
@@ -442,7 +517,6 @@ function UnitFactory.Player(frame, width, height)
   Decorators.StatusIcons(frame)
   Decorators.HealPrediction(frame)
 
-  --frame.DebuffHighlightBackdrop = true
   frame.Health.frequentUpdates = true
   frame.Health.colorSmooth = true
   frame.Health.bg.multiplier = 0.3
@@ -483,11 +557,34 @@ function UnitFactory.Target(frame, width, height)
   frame:Tag(name, "[kln:level] [kln:color][kln:name][kln:afkdnd]")
   frame:Tag(health, "[kln:full_hp]")
 
+  -- Debuff Highlight
+  local dbh = frame.Health:CreateTexture(nil, "OVERLAY")
+  dbh:SetAllPoints(frame.Health)
+  dbh:SetTexture(bar_common)
+  dbh:SetBlendMode("ADD")
+  dbh:SetVertexColor(0, 0, 0, 0)
+  frame.DebuffHighlight = dbh
+
   -- Castbar (fixed position)
   local cb = ElementFactory.CreateCastbar(frame, 250, 26)
   if cb then
     -- In case of the "focus" unit
     cb:SetPoint("TOP", oUF_klnFramesCastbarplayer, "BOTTOM", 0, -8)
+  end
+
+  -- Auras
+  Decorators.Auras(frame)
+  frame.Auras.CustomFilter = ns.CustomAuraFilters.target
+  if frame.mystyle == "target" then
+    frame.Auras:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 0, 6)
+    frame.Auras.initialAnchor = "BOTTOMLEFT"
+    frame.Auras["growth-x"] = "RIGHT"
+    frame.Auras["growth-y"] = "UP"
+  else
+    frame.Auras:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 0, -6)
+    frame.Auras.initialAnchor = "TOPLEFT"
+    frame.Auras["growth-x"] = "RIGHT"
+    frame.Auras["growth-y"] = "DOWN"
   end
 
   -- Cherry frosting
@@ -966,6 +1063,24 @@ function Decorators.RaidDebuffs(frame)
 end
 
 
+function Decorators.Auras(frame)
+  auras = CreateFrame("Frame", nil, frame)
+
+  auras.size = 22
+  auras.numBuffs = 10
+  auras.numDebuffs = 16
+  auras.spacing = 1
+
+  auras:SetHeight(auras.size * 2 + 2)
+  auras:SetWidth(frame:GetWidth())
+
+  auras.PostCreateIcon = PostCreateIcon
+  auras.PostUpdateIcon = PostUpdateIcon
+
+  frame.Auras = auras
+end
+
+
 ------------------------------------------------------------------------------
 -- Class-specific Resource Bars
 ------------------------------------------------------------------------------
@@ -1336,6 +1451,10 @@ api.Boss              = UnitFactory.Boss
 api.CreateString      = ElementFactory.CreateString
 api.CreateBar         = ElementFactory.CreateBar
 api.CreateBackground  = ElementFactory.CreateBackground
+
+-- Phanx libraries
+api.GetPlayerRole     = ns.GetPlayerRole
+api.CustomAuraFilters = ns.CustomAuraFilters
 
 api.SpawnMenu = SpawnMenu
 api.StyleMirrorBar = function(f)

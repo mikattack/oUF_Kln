@@ -100,8 +100,7 @@ local DefaultLayout = {
     self.mystyle = "target"
     lib.Target(self, framewidth * 0.70, frameheight)
     self:SetSize(framewidth * 0.70,frameheight)
-    --if cfg.targetBuffs then lib.addBuffs(self) end
-    --if cfg.targetDebuffs then lib.addDebuffs(self) end
+    self.Auras:SetWidth(framewidth)
 
     self:SetPoint("BOTTOMLEFT", lapi.GetFrame('player'), "TOPLEFT", 0, 8)
   end,
@@ -111,6 +110,7 @@ local DefaultLayout = {
     self.mystyle = "tot"
     lib.TargetOfTarget(self, framewidth * 0.30 - 8, frameheight)
     self:SetSize(framewidth * 0.30 - 8,frameheight)
+
     self:SetPoint("LEFT", lapi.GetFrame('target'), "RIGHT", 8, 0)
   end,
 
@@ -119,7 +119,7 @@ local DefaultLayout = {
     self.mystyle = "focus"
     lib.Target(self, framewidth * 0.70, frameheight)
     self:SetSize(framewidth * 0.70,frameheight)
-    --if cfg.focusBuffs or cfg.focusDebuffs then lib.addFocusAuras(self) end
+
     self:SetPoint("TOP", UIParent, "TOP", -math.floor((framewidth * 0.30) / 2), -15)
   end,
   
@@ -128,6 +128,7 @@ local DefaultLayout = {
     self.mystyle = "focustarget"
     lib.TargetOfTarget(self, framewidth * 0.30 - 8, frameheight)
     self:SetSize(framewidth * 0.30 - 8,frameheight)
+
     self:SetPoint("LEFT", lapi.GetFrame('focus'), "RIGHT", 8, 0)
   end,
   
@@ -135,6 +136,7 @@ local DefaultLayout = {
     self.mystyle = "pet"
     lib.Pet(self, framewidth * 0.75, 12)
     self:SetSize(framewidth * 0.75, 12)
+
     self:SetPoint("TOPLEFT", lapi.GetFrame('player'), "BOTTOMLEFT", 0, -8)
   end,
   
@@ -149,8 +151,6 @@ local DefaultLayout = {
     self.mystyle = "boss"
     lib.Boss(self, framewidth, frameheight)
     self:SetSize(framewidth, frameheight)
-    --if cfg.targetBuffs then lib.addBuffs(self) end
-    --if cfg.targetDebuffs then lib.addDebuffs(self) end
   end,
 }
 
@@ -305,7 +305,7 @@ local function debugFrame(frame)
   local f = CreateFrame("Frame", nil, UIParent)
   f:SetBackdropColor(0.2, 1, 0.2, 1)
   f:SetSize(frame:GetWidth(), frame:GetHeight())
-  f:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 0)
+  f:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 0) 
   
   f.texture = f:CreateTexture()
   f.texture:SetAllPoints(f)

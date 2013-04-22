@@ -6,12 +6,13 @@
 ## RequiredDeps: oUF
 ## X-Category: UnitFrame
 
-layouts.lua
 cfg.lua
 tags.lua
+role.lua
 
 elements\Castbar.lua
 elements\RaidDebuffs.lua
+elements\oUF_AuraFilter.lua
 elements\oUF_ComboPoints.lua
 elements\oUF_DebuffHighlight.lua
 elements\oUF_ElusiveBrewStacks.lua
