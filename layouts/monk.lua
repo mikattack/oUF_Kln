@@ -3,13 +3,17 @@
 ------------------------------------------------------------------------------
 
 local addon, ns = ...
-local cfg = ns.cfg
-local lib = ns.lib
+local cfg = ns.Kln.cfg
+local lib = ns.Kln.lib
+local GetTime = GetTime
+
+local tags = oUF.Tags
 
 local ResourceBar
 
 local bar_power  = cfg.media.bar.power
 local bar_common = cfg.media.bar.common
+local font       = cfg.media.font.common
 
 
 ------------------------------------------------------------------------------
@@ -22,13 +26,13 @@ local spawn = function(frame, ...)
 
   ResourceBar(frame)
 
-  local stackWidth = math.floor(210 / 15)
+  local stackWidth = math.floor(230 / 15)
   local specialBarWidth = (stackWidth * 15) + (14)
 
   -- Elusive Brew Stacks
   frame.ElusiveBrewStacks = CreateFrame("Frame", nil, frame)
   frame.ElusiveBrewStacks:SetSize(specialBarWidth, frame:GetHeight())
-  frame.ElusiveBrewStacks:SetPoint("RIGHT", frame.Health, "LEFT", -20, 0)
+  frame.ElusiveBrewStacks:SetPoint("RIGHT", frame.Health, "LEFT", -16, 0)
   lib.CreateBackground(frame.ElusiveBrewStacks)
 
   frame.ElusiveBrewStacks.stacks = {}
@@ -80,6 +84,10 @@ local spawn = function(frame, ...)
   frame.Stagger.bg = bg
   frame.Stagger:SetPoint("TOP", frame.ElusiveBrewStacks, "BOTTOM", 0, -8)
   lib.CreateBackground(frame.Stagger)
+
+  -- Shuffle Uptime
+  --local shuffle = CreateShuffle(frame)
+  --shuffle:SetPoint('BOTTOMLEFT', frame.ElusiveBrewUptime, 'TOPLEFT', -3, -2)
 end
 
 
@@ -102,7 +110,7 @@ ResourceBar = function(self)
   background:SetFrameStrata('MEDIUM')
 
   -- Placeholder slots for the "orbs"
-  local maxPower = UnitPowerMax("player", SPELL_POWER_CHI)
+  local maxPower = UnitPowerMax("player",SPELL_POWER_CHI)
   mhb.slots = CreateFrame("Frame", nil, self)
   mhb.slots:SetAllPoints(mhb)
   mhb.slots:SetFrameLevel(mhb:GetFrameLevel() + 1)
@@ -118,6 +126,29 @@ ResourceBar = function(self)
       mhb.slots[i]:SetPoint("LEFT", mhb.slots[i - 1], "RIGHT", 2, 0)
     end
   end
+
+  -- Update background slots on talent swap
+  local SetResourceSlotWidth = function(self, ...)
+    local hasAscension = select(5, GetTalentInfo(8))  -- Ascension (Tier:3, Slot:2, Talent:8)
+    if hasAscension then
+      self[5]:Show()
+      for i = 1,5 do
+        self[i]:SetWidth(self:GetWidth() / 5 - 2)
+      end
+    elseif maxPower == 5 then
+      self[5]:Hide()
+      for i = 1,4 do
+        self[i]:SetWidth(self:GetWidth() / 4 - 2)
+      end
+    end
+  end
+  mhb.slots:RegisterEvent("PLAYER_TALENT_UPDATE", SetResourceSlotWidth)
+  mhb.slots:SetScript("OnEvent", function(self, event, ...)
+    if not event == "PLAYER_TALENT_UPDATE" then return end
+    SetResourceSlotWidth(mhb.slots)
+  end)
+  SetResourceSlotWidth(mhb.slots)
+
   
   -- The actual "orbs"
   for i = 1, 5 do
@@ -140,6 +171,47 @@ ResourceBar = function(self)
   end
   
   self.MonkHarmonyBar = mhb
+end
+
+
+-- TAG: Shuffle
+local SHUFFLE = GetSpellInfo(115307)
+tags.Events["Monk:Shuffle"] = 'UNIT_AURA'
+tags.Methods["Monk:Shuffle"] = function(u, r)
+  local _, _, _, _, _, _, expirationTime, source = UnitAura('player', SHUFFLE)
+  if source then
+    return format("%.0f", expirationTime - GetTime())
+  else
+    return '-'
+  end
+end
+
+
+-- TAG: Shuffle
+local VENGENCE = GetSpellInfo(115307)
+tags.Events["Tank:AttackPower"] = 'UNIT_AURA'
+tags.Methods["Tank:AttackPower"] = function(u, r)
+  local _, _, _, _, _, _, expirationTime, source = UnitAura('player', VENGENCE)
+  if source then
+    return format("%.0f", expirationTime - GetTime())
+  else
+    return '-'
+  end
+end
+
+
+-- Shuffle Display
+CreateShuffle = function (frame)
+  local label = lib.CreateString(frame, font, 16, "THINOUTLINE")
+  local value = lib.CreateString(frame, font, 28, "THINOUTLINE")
+
+  label:SetText('Shuffle')
+  label:SetPoint('BOTTOMLEFT', value, 'BOTTOMRIGHT', -1, 3)
+
+  value:SetText('-')
+  frame:Tag(value, "[Monk:Shuffle]")
+
+  return value
 end
 
 

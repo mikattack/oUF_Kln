@@ -9,8 +9,9 @@
 
 local addon, ns = ...
   
-local cfg = ns.cfg
-local lib = ns.lib
+local cfg   = ns.Kln.cfg
+local lib   = ns.Kln.lib
+local units = ns.Kln.units
 
 local layouts = cfg.layouts or {}
 
@@ -21,13 +22,23 @@ oUF.colors.smooth = {
   .165, .188, .196  --max health
 }
 
+-- Redeclare Rune colors
+--[[
+oUF.colors.runes = {
+  {0.87, 0.12, 0.23},
+  {0.40, 0.95, 0.20},
+  {0.14, 0.50, 1},
+  {.70, .21, 0.94},
+}
+--]]
+
 
 ------------------------------------------------------------------------------
 -- Load Custom Layout (as necessary)
 ------------------------------------------------------------------------------
 
 -- 
--- Don't be fooled.  "Layouts" are really just "hooks" into th oUF spawinging
+-- Don't be fooled.  "Layouts" are really just "hooks" into th oUF spawning
 -- process.  Didn't seem like there was a way to do this through oUF, so I'm
 -- faking it.
 -- 
@@ -88,7 +99,7 @@ local frameheight = 26
 local DefaultLayout = {
   player = function(self, ...)
     self.mystyle = "player"
-    lib.Player(self, framewidth, frameheight)
+    units.Player(self, framewidth, frameheight)
     self:SetSize(framewidth,frameheight)
     self:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 45)
 
@@ -98,7 +109,7 @@ local DefaultLayout = {
 
   target = function(self, ...)
     self.mystyle = "target"
-    lib.Target(self, framewidth * 0.70, frameheight)
+    units.Target(self, framewidth * 0.70, frameheight)
     self:SetSize(framewidth * 0.70,frameheight)
     self.Auras:SetWidth(framewidth)
 
@@ -108,7 +119,7 @@ local DefaultLayout = {
 
   targettarget = function(self, ...)
     self.mystyle = "tot"
-    lib.TargetOfTarget(self, framewidth * 0.30 - 8, frameheight)
+    units.TargetOfTarget(self, framewidth * 0.30 - 8, frameheight)
     self:SetSize(framewidth * 0.30 - 8,frameheight)
 
     self:SetPoint("LEFT", lapi.GetFrame('target'), "RIGHT", 8, 0)
@@ -117,7 +128,7 @@ local DefaultLayout = {
 
   focus = function(self, ...)
     self.mystyle = "focus"
-    lib.Target(self, framewidth * 0.70, frameheight)
+    units.Target(self, framewidth * 0.70, frameheight)
     self:SetSize(framewidth * 0.70,frameheight)
 
     self:SetPoint("TOP", UIParent, "TOP", -math.floor((framewidth * 0.30) / 2), -15)
@@ -126,7 +137,7 @@ local DefaultLayout = {
 
   focustarget = function(self, ...)
     self.mystyle = "focustarget"
-    lib.TargetOfTarget(self, framewidth * 0.30 - 8, frameheight)
+    units.TargetOfTarget(self, framewidth * 0.30 - 8, frameheight)
     self:SetSize(framewidth * 0.30 - 8,frameheight)
 
     self:SetPoint("LEFT", lapi.GetFrame('focus'), "RIGHT", 8, 0)
@@ -134,7 +145,7 @@ local DefaultLayout = {
   
   pet = function(self, ...)
     self.mystyle = "pet"
-    lib.Pet(self, framewidth * 0.75, 12)
+    units.Pet(self, framewidth * 0.75, 12)
     self:SetSize(framewidth * 0.75, 12)
 
     self:SetPoint("TOPLEFT", lapi.GetFrame('player'), "BOTTOMLEFT", 0, -8)
@@ -143,13 +154,13 @@ local DefaultLayout = {
 
   raid = function(self, ...)
     self.mystyle = "raid"
-    lib.Raid(self, 77, 32)
+    units.Raid(self, 77, 32)
   end,
 
 
   boss = function(self, ...)
     self.mystyle = "boss"
-    lib.Boss(self, framewidth, frameheight)
+    units.Boss(self, framewidth, frameheight)
     self:SetSize(framewidth, frameheight)
   end,
 }
@@ -163,7 +174,7 @@ local DefaultLayout = {
 -- Common unit frame handler.
 -- 
 local UnitFrameStyle = function(self, unit, isSingle)
-  self.menu = lib.SpawnMenu
+  self.menu = lib.RightClickMenu
   self:RegisterForClicks('AnyUp')
   
   -- Call Unit Specific Styles
@@ -181,7 +192,7 @@ end
 -- 
 local RaidStyle = function(self, unit)
   if (cfg.enableRightClickMenu) then
-    self.menu = lib.SpawnMenu
+    self.menu = lib.RightClickMenu
     self:RegisterForClicks('AnyUp')
   end
   

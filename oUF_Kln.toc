@@ -6,12 +6,16 @@
 ## RequiredDeps: oUF
 ## X-Category: UnitFrame
 
+namespace.lua
+
 cfg.lua
 tags.lua
 role.lua
+frames.lua
+decorators.lua
 
-elements\Castbar.lua
 elements\RaidDebuffs.lua
+elements\Indicators.lua
 elements\oUF_AuraFilter.lua
 elements\oUF_ComboPoints.lua
 elements\oUF_DebuffHighlight.lua
@@ -22,9 +26,8 @@ elements\oUF_HolyPower.lua
 elements\oUF_ShadowOrbs.lua
 elements\oUF_Soulshards.lua
 elements\oUF_Stagger.lua
-elements\Indicators.lua
 
-lib.lua
+units.lua
 
 layouts\monk.lua
 layouts\warlock.lua

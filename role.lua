@@ -2,7 +2,8 @@
   This role detection library is a barely modified version of Phanx's
   from his oUF_Phanx layout.
 
-  Licensing for this file is roughly (as license file is not included):
+  Licensing for this file is roughly the following (since a license
+  file is not included):
 
   oUF_Phanx
   Copyright (c) 2008-2013 Phanx <addons@phanx.net>. All rights reserved.
@@ -12,6 +13,7 @@
 
 
 local _, ns = ...
+local lib = ns.Kln.lib
 
 local playerClass = select(2, UnitClass("player"))
 
@@ -117,4 +119,4 @@ if getRole then
   --]]
 end
 
-ns.GetPlayerRole = function() return CURRENT_ROLE end
+lib.GetPlayerRole = function() return CURRENT_ROLE end

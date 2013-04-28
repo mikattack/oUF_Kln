@@ -1,5 +1,4 @@
 local addon, ns = ...
-local cfg = ns.cfg
 
 local tags = oUF.Tags
 local GetTime = GetTime

@@ -1,6 +1,6 @@
 local _, ns = ...
-local cfg = ns.cfg
-local lib = ns.lib
+local cfg = ns.Kln.cfg
+local lib = ns.Kln.lib
 local oUF = ns.oUF or oUF
 --local rd = CreateFrame("Frame")
 

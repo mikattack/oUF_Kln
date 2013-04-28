@@ -2,7 +2,8 @@
   This filtering library is a barely modified version of Phanx's
   from his oUF_Phanx layout.
 
-  Licensing for this file is roughly (as license file is not included):
+  Licensing for this file is roughly the following (since a license
+  file is not included):
 
   Copyright (c) 2008-2013 Phanx <addons@phanx.net>. All rights reserved.
   http://www.wowinterface.com/downloads/info13993-oUF_Phanx.html
@@ -19,6 +20,8 @@ local _, ns = ...
 local _, playerClass = UnitClass("player")
 local _, playerRace = UnitRace("player")
 
+local lib = ns.Kln.lib
+local cfg = ns.Kln.cfg
 
 
 local updateFuncs = {} -- functions to call to add/remove auras
@@ -799,7 +802,7 @@ end
 
 if playerClass == "DEATHKNIGHT" or playerClass == "DRUID" or playerClass == "MONK" or playerClass == "PALADIN" or playerClass == "WARRIOR" then
   tinsert(updateFuncs, function(auraList)
-    if ns.GetPlayerRole() == "TANK" then
+    if lib.GetPlayerRole() == "TANK" then
       -- druids need to keep Thrash up anyway, no need to see both
       auraList[109466] = 1 -- Curse of Enfeeblement (warlock)
       auraList[60256]  = 1 -- Demoralizing Roar (hunter bear)
@@ -813,7 +816,7 @@ end
 --  PvP
 
 tinsert(updateFuncs, function(auraList)
-  if ns.config.PVP then
+  if cfg.PVPAuras then
     -- Disarmed
     auraList[50541]  = 1 -- Clench (hunter scorpid)
     auraList[676]    = 1 -- Disarm (warrior)
@@ -860,7 +863,7 @@ if playerClass == "DEATHKNIGHT" or playerClass == "DRUID" or playerClass == "MON
     [355]    = 1, -- Taunt
   }
   tinsert(updateFuncs, function(auraList)
-    if ns.config.PVP then
+    if cfg.config.PVPAuras then
       for aura in pairs(Taunts) do
         BaseAuras[aura] = nil
       end
@@ -908,9 +911,9 @@ BaseAuras[63429] = 0 -- Undercity Valiant's Pennant
 ------------------------------------------------------------------------
 
 local auraList = {}
-ns.AuraList = auraList
+lib.AuraList = auraList
 
-ns.UpdateAuraList = function()
+lib.UpdateAuraList = function()
   wipe(auraList)
   for aura, filter in pairs(BaseAuras) do
     auraList[aura] = filter
@@ -945,7 +948,7 @@ local filters = {
   [4] = function(self, unit, caster) return unit == "player" and not self.__owner.isGroupFrame end,
 }
 
-ns.CustomAuraFilters = {
+lib.CustomAuraFilters = {
   player = function(self, unit, iconFrame, name, rank, icon, count, debuffType, duration, expirationTime, caster, isStealable, shouldConsolidate, spellID, canApplyAura, isBossDebuff, isCastByPlayer, value1, value2, value3)
     -- print("CustomAuraFilter", self.__owner:GetName(), "[unit]", unit, "[caster]", caster, "[name]", name, "[id]", spellID, "[filter]", v, caster == "vehicle")
     local v = auraList[spellID]

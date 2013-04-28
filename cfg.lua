@@ -8,7 +8,7 @@
 
 
 local addon, ns = ...
-local cfg = CreateFrame("Frame")
+local cfg = ns.Kln.cfg
 
 
 ------------------------------------------------------------------------------
@@ -253,5 +253,3 @@ cfg.updateSpec = function()
 end
 
 cfg.layouts = {}
-
-ns.cfg = cfg

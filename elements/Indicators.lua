@@ -1,7 +1,7 @@
 local _,ns = ...
-local cfg = ns.cfg
+local cfg = ns.Kln.cfg
 local oUF = ns.oUF or oUF
-assert(oUF, "oUF_Drk was unable to locate oUF install.")
+assert(oUF, "oUF_Kln was unable to locate oUF install.")
 
 local _, playerClass = UnitClass("player")
 
