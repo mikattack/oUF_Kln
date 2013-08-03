@@ -21,8 +21,6 @@ local spawn = function(frame, ...)
   if frame.mystyle ~= 'player' then return end
 
   ResourceBar(frame)
-
-  frame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 60)
 end
 
 

@@ -101,7 +101,7 @@ local DefaultLayout = {
     self.mystyle = "player"
     units.Player(self, framewidth, frameheight)
     self:SetSize(framewidth,frameheight)
-    self:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 45)
+    self:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 60)
 
     self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", cfg.updateSpec)
   end,
@@ -275,7 +275,7 @@ oUF:Factory(function(self)
         header:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", cfg.raidX, cfg.raidY)
       else
         if cfg.raidOrientationHorizontal then
-          header:SetPoint("TOPLEFT", raid[i-1], "BOTTOMLEFT", 0, -5)
+          header:SetPoint("BOTTOMLEFT", raid[i-1], "TOPLEFT", 0, 5)
         else
           header:SetPoint("TOPLEFT", raid[i-1], "TOPRIGHT", 4, 0)
         end

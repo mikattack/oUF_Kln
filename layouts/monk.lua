@@ -32,7 +32,7 @@ local spawn = function(frame, ...)
   -- Elusive Brew Stacks
   frame.ElusiveBrewStacks = CreateFrame("Frame", nil, frame)
   frame.ElusiveBrewStacks:SetSize(specialBarWidth, frame:GetHeight())
-  frame.ElusiveBrewStacks:SetPoint("RIGHT", frame.Health, "LEFT", -16, 0)
+  frame.ElusiveBrewStacks:SetPoint("RIGHT", frame.Health, "LEFT", -16, -15)
   lib.CreateBackground(frame.ElusiveBrewStacks)
 
   frame.ElusiveBrewStacks.stacks = {}
