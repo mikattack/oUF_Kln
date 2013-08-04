@@ -26,68 +26,34 @@ local spawn = function(frame, ...)
 
   ResourceBar(frame)
 
-  local stackWidth = math.floor(230 / 15)
-  local specialBarWidth = (stackWidth * 15) + (14)
+  local specialBarWidth = math.floor(230 + 14)
 
-  -- Elusive Brew Stacks
-  frame.ElusiveBrewStacks = CreateFrame("Frame", nil, frame)
-  frame.ElusiveBrewStacks:SetSize(specialBarWidth, frame:GetHeight())
-  frame.ElusiveBrewStacks:SetPoint("RIGHT", frame.Health, "LEFT", -16, -15)
-  lib.CreateBackground(frame.ElusiveBrewStacks)
+  -- Monk Brew Stacks
+  frame.MonkBrewStacks = CreateFrame("Frame", nil, frame)
+  frame.MonkBrewStacks:SetSize(specialBarWidth, frame:GetHeight())
+  frame.MonkBrewStacks:SetPoint("RIGHT", frame.Health, "LEFT", -16, -15)
+  frame.MonkBrewStacks.texture = bar_power
+  lib.CreateBackground(frame.MonkBrewStacks)
 
-  frame.ElusiveBrewStacks.stacks = {}
-  local front, back
-  local r,g,b
-  for i=1, 15 do
-    back = frame.ElusiveBrewStacks:CreateTexture(nil, "BACKGROUND")
-    back:SetTexture(bar_power)
-    back:SetSize(stackWidth, frame:GetHeight())
-
-    front = frame.ElusiveBrewStacks:CreateTexture(nil, "BORDER")
-    front:SetTexture(bar_power)
-    front:SetPoint("TOPLEFT", back, "TOPLEFT", 1, -1)
-    front:SetPoint("BOTTOMRIGHT", back, "BOTTOMRIGHT", -1, 1)
-
-    if i == 1 then
-      back:SetPoint("LEFT", frame.ElusiveBrewStacks, "LEFT", 0, 0)
-    else
-      back:SetPoint("LEFT", frame.ElusiveBrewStacks.stacks[i - 1], "RIGHT", 2, 0)
-    end
-
-    if i < 6 then
-      r,g,b = 1.00,  0.96,  0.41
-    elseif i == 6 then
-      r,g,b = 1.00,  0.49,  0.04
-    else
-      r,g,b = 0.67,  0.83,  0.45
-    end
-    front:SetVertexColor(r,g,b)
-    back:SetVertexColor(r*0.3, g*0.3, b*0.3)
-
-    front:Hide()
-    frame.ElusiveBrewStacks.stacks[i] = front
-  end
-  
-
-  -- Elusive Brew Uptime
+  -- Brew Uptime
   f, bg = lib.CreateBar(frame, specialBarWidth, 7, bar_power)
   f:SetStatusBarColor(1.00,  0.96,  0.41)
   bg:SetVertexColor(1.00 * 0.3,  0.96 * 0.3,  0.41 * 0.3)
-  frame.ElusiveBrewUptime = f
-  frame.ElusiveBrewUptime.bg = bg
-  frame.ElusiveBrewUptime:SetPoint("BOTTOM", frame.ElusiveBrewStacks, "TOP", 0, 8)
-  lib.CreateBackground(frame.ElusiveBrewUptime)
+  frame.MonkBrewUptime = f
+  frame.MonkBrewUptime.bg = bg
+  frame.MonkBrewUptime:SetPoint("BOTTOM", frame.MonkBrewStacks, "TOP", 0, 8)
+  lib.CreateBackground(frame.MonkBrewUptime)
 
   -- Stagger
   f, bg = lib.CreateBar(frame, specialBarWidth, 7, bar_power)
   frame.Stagger = f
   frame.Stagger.bg = bg
-  frame.Stagger:SetPoint("TOP", frame.ElusiveBrewStacks, "BOTTOM", 0, -8)
+  frame.Stagger:SetPoint("TOP", frame.MonkBrewStacks, "BOTTOM", 0, -8)
   lib.CreateBackground(frame.Stagger)
 
   -- Shuffle Uptime
   --local shuffle = CreateShuffle(frame)
-  --shuffle:SetPoint('BOTTOMLEFT', frame.ElusiveBrewUptime, 'TOPLEFT', -3, -2)
+  --shuffle:SetPoint('BOTTOMLEFT', frame.MonkBrewUptime, 'TOPLEFT', -3, -2)
 end
 
 
@@ -187,7 +153,7 @@ tags.Methods["Monk:Shuffle"] = function(u, r)
 end
 
 
--- TAG: Shuffle
+-- TAG: Vengence 
 local VENGENCE = GetSpellInfo(115307)
 tags.Events["Tank:AttackPower"] = 'UNIT_AURA'
 tags.Methods["Tank:AttackPower"] = function(u, r)

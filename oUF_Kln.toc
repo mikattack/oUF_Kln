@@ -19,8 +19,8 @@ elements\Indicators.lua
 elements\oUF_AuraFilter.lua
 elements\oUF_ComboPoints.lua
 elements\oUF_DebuffHighlight.lua
-elements\oUF_ElusiveBrewStacks.lua
-elements\oUF_ElusiveBrewUptime.lua
+elements\oUF_MonkBrewStacks.lua
+elements\oUF_MonkBrewUptime.lua
 elements\oUF_Harmony.lua
 elements\oUF_HolyPower.lua
 elements\oUF_ShadowOrbs.lua
